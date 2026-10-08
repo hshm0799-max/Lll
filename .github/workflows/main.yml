@@ -13,14 +13,32 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+      - name: Find the app source
+        run: |
+          echo "Files in the repo:"
+          ls -la
+          mkdir -p _keep
+          ZIP=$(ls *.zip 2>/dev/null | head -1 || true)
+          if [ -n "$ZIP" ]; then
+            echo "Using zip: $ZIP"
+            unzip -q -o "$ZIP" -d _src
+            SRC=$(dirname "$(find _src -name pubspec.yaml | head -1)")
+            cp -r "$SRC/lib" _keep/lib
+            cp "$SRC/pubspec.yaml" _keep/pubspec.yaml
+          elif [ -f pubspec.yaml ] && [ -d lib ]; then
+            cp -r lib _keep/lib
+            cp pubspec.yaml _keep/pubspec.yaml
+          else
+            echo "No app source found. Upload the zip file to the repo main page."
+            exit 1
+          fi
       - name: Create the Android project
         run: flutter create --platforms=android --org com.grandaurum --project-name grand_aurum .
-      - name: Replace the demo app with Grand Aurum
+      - name: Put the Grand Aurum code in place of the demo app
         run: |
-          unzip -q -o grand-aurum-flutter.zip -d _src
-          rm -rf lib test
-          cp -r _src/grand_aurum/lib ./lib
-          cp _src/grand_aurum/pubspec.yaml ./pubspec.yaml
+          rm -rf lib test pubspec.yaml
+          cp -r _keep/lib lib
+          cp _keep/pubspec.yaml pubspec.yaml
           ls lib lib/pages
       - name: Allow internet
         run: |
