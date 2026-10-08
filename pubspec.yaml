@@ -1,0 +1,16 @@
+name: grand_aurum
+description: Grand Aurum - hotel and restaurant booking (customer app)
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  supabase_flutter: ^2.8.0
+  qr_flutter: ^4.1.0
+
+flutter:
+  uses-material-design: true
