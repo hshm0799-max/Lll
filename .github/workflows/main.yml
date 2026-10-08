@@ -13,25 +13,33 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
-      - name: Find the app source
+      - name: Arrange the app source
         run: |
-          echo "Files in the repo:"
-          ls -la
-          mkdir -p _keep
+          mkdir -p _keep/lib/pages
           ZIP=$(ls *.zip 2>/dev/null | head -1 || true)
           if [ -n "$ZIP" ]; then
-            echo "Using zip: $ZIP"
             unzip -q -o "$ZIP" -d _src
             SRC=$(dirname "$(find _src -name pubspec.yaml | head -1)")
-            cp -r "$SRC/lib" _keep/lib
+            cp -r "$SRC/lib/." _keep/lib/
             cp "$SRC/pubspec.yaml" _keep/pubspec.yaml
-          elif [ -f pubspec.yaml ] && [ -d lib ]; then
-            cp -r lib _keep/lib
+          elif [ -d lib ] && [ -f pubspec.yaml ]; then
+            cp -r lib/. _keep/lib/
+            cp pubspec.yaml _keep/pubspec.yaml
+          elif [ -f main.dart ] && [ -f pubspec.yaml ]; then
+            echo "Files are flat in the repo root. Placing them into lib and lib/pages."
+            cp main.dart config.dart _keep/lib/
+            for f in *.dart; do
+              if [ "$f" != "main.dart" ] && [ "$f" != "config.dart" ]; then
+                cp "$f" _keep/lib/pages/
+              fi
+            done
             cp pubspec.yaml _keep/pubspec.yaml
           else
-            echo "No app source found. Upload the zip file to the repo main page."
+            echo "No app source found."
+            ls -la
             exit 1
           fi
+          ls -R _keep
       - name: Create the Android project
         run: flutter create --platforms=android --org com.grandaurum --project-name grand_aurum .
       - name: Put the Grand Aurum code in place of the demo app
