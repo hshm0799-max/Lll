@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: grand-aurum-api
+    runtime: node
+    rootDir: render-api
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - {key: SUPABASE_URL, sync: false}
+      - {key: SUPABASE_ANON_KEY, sync: false}
+      - {key: SUPABASE_SERVICE_ROLE_KEY, sync: false}
+      - {key: GMAIL_CLIENT_ID, sync: false}
+      - {key: GMAIL_CLIENT_SECRET, sync: false}
+      - {key: GMAIL_REFRESH_TOKEN, sync: false}
+      - {key: GMAIL_SENDER, sync: false}
+      - {key: RAZORPAY_KEY_ID, sync: false}
+      - {key: RAZORPAY_KEY_SECRET, sync: false}
+      - {key: RAZORPAY_WEBHOOK_SECRET, sync: false}
+      - {key: STRIPE_SECRET_KEY, sync: false}
+      - {key: STRIPE_WEBHOOK_SECRET, sync: false}
+      - {key: JOB_SECRET, generateValue: true}
+      - {key: ALLOWED_ORIGINS, value: "*"}
+      - {key: PAYMENTS_ENABLED, value: "false"}
+  - type: cron
+    name: expire-pending-bookings
+    runtime: node
+    rootDir: render-api
+    schedule: "*/5 * * * *"
+    buildCommand: "true"
+    startCommand: "curl -fsS -X POST -H \"x-job-secret: $JOB_SECRET\" $API_URL/jobs/expire"
+    envVars:
+      - {key: JOB_SECRET, sync: false}
+      - {key: API_URL, sync: false}
